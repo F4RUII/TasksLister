@@ -1,0 +1,16 @@
+:root {
+    /* Color Palettes */
+    --color-1: #D7D9CE;
+    --color-1-1: rgb(215, 217, 206, 0.25);
+    --color-2: #0C7489;
+    --color-3: #13505B;
+    --color-4: rgb(30, 30, 30);
+    --color-4-1: rgb(30, 30, 30, 0.25);
+    --color-5: rgb(17, 157, 164);
+    --color-5-1: rgb(17, 157, 164, 0.25);
+
+
+
+    /* Setting */
+    --setting-size: 2rem;
+}
