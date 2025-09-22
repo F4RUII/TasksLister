@@ -39,9 +39,17 @@ addTaskFolder.addEventListener("click", () => {
 
 // Tasks and Set up here & there
 let taskLists = JSON.parse(localStorage.getItem('taskLists')) || {'Default': []}; // Get task lists that are stored in local storage
-let currentTaskListId = Object.keys(taskLists)[ Math.floor( Math.random() * Object.keys(taskLists).length + 1 ) - 1 ] || null;
-// taskLists.map()
-// tasks.map(task => {return {...task, newTask: false}});
+
+function getRandomTaskList() {
+    const keys = Object.keys(taskLists);
+    console.log("random")
+    console.log(taskLists)
+    console.log(keys)
+    console.log("random")
+    return keys[ Math.floor( Math.random() * keys.length + 1 ) - 1 ] || null
+};
+let currentTaskListId = getRandomTaskList();
+
 console.log(`Tasklists : ${taskLists}, CurrentTaskListId : ${currentTaskListId}`);
 const lists = document.getElementById("lists");
 Object.keys(taskLists).forEach((id, index) => { // Add task list button
@@ -54,8 +62,10 @@ Object.keys(taskLists).forEach((id, index) => { // Add task list button
 
 const fillInZero = (number) => number < 10 && number > -1 ? `0${number}` : `${number}`;
 
-const updateToDoList = () => {
+const updateTasks = () => {
     toDoListContainer.innerHTML = '';
+
+    if (Object.keys(taskLists).length <= 0) return;
 
     taskLists[currentTaskListId].forEach((task, index) => {
         const { name, detail, due_date, due_time, newTask } = task;
@@ -144,7 +154,7 @@ const updateToDoList = () => {
         }
     });
 }
-updateToDoList();
+updateTasks();
 
 function copyTask(index) {
     taskInputs.forEach(input => {
@@ -153,7 +163,7 @@ function copyTask(index) {
     });
 }
 
-function removeTask(id, index) {
+function removeTask(index) {
     const task = document.querySelectorAll('.task')[index]; // Get the task element
     
     task.classList.add('removing'); // Add class for animation
@@ -163,10 +173,10 @@ function removeTask(id, index) {
 
         // Save and update
         localStorage.setItem('taskLists', JSON.stringify(taskLists));
-        updateToDoList(id);
+        updateTasks();
     }, 200);
 
-    console.log(`Removing task from ${id} task list`);
+    console.log(`Removing task from ${currentTaskListId} task list`);
 }
 
 function addTask() {
@@ -192,15 +202,34 @@ function addTask() {
     // Add new task to the task list
     taskLists[currentTaskListId].unshift(taskData);
 
-    updateToDoList();
+    updateTasks();
 
     localStorage.setItem('taskLists', JSON.stringify(taskLists));
     console.log(`Task added to ${currentTaskListId} task list!`);
 };
 
-clearTaskBtn.addEventListener('click', () => {
-    localStorage.clear();
-});
+function clearTasks() {
+    delete taskLists[currentTaskListId]; // Delete the key with the current task list id (pretty cool thingy)
+    
+    // Find the task list element and remove it
+    const tasklistElements = document.querySelectorAll(".list-card");
+    console.log(tasklistElements)
+    tasklistElements.forEach(element => {
+        // Check if the element is the add list element
+        if (element.classList.contains("add-card")) return;
+
+        if (element.textContent === currentTaskListId &&
+            element.textContent !== "Default" // Can't have user deleting that (will ruin data)
+        ) element.remove();
+    })
+
+    console.log(taskLists)
+    console.log("...")
+
+    localStorage.setItem('taskLists', JSON.stringify(taskLists));
+    currentTaskListId = getRandomTaskList();
+    updateTasks();
+};
 
 let inputActive = false
 function addList(element) {
@@ -217,16 +246,16 @@ function addList(element) {
 
         // Detect when user stopped using input
         inputElement.addEventListener("blur", () => {
-            inputElement.removeEventListener("blur", () => {})
-            inputElement.remove()
-            inputActive = false
+            inputElement.removeEventListener("blur", () => {});
+            inputElement.remove();
+            inputActive = false;
 
-            element.textContent = "Add List"
+            element.textContent = "Add List";
 
             // Add new list to list
             const id = inputElement.value;
             if (id) {
-                lists.innerHTML += `<button class="list-card drop-shadow" onclick="selectList(this)">${id}</button>`
+                lists.innerHTML += `<button class="list-card drop-shadow" onclick="selectList(this)">${id}</button>`;
                 taskLists[id] = [];
                 localStorage.setItem('taskLists', JSON.stringify(taskLists));
             }
@@ -240,6 +269,6 @@ function selectList(element) {
 
     if (currentTaskListId !== id) {
         currentTaskListId = id;
-        updateToDoList()
+        updateTasks()
     }
 }
